@@ -1,6 +1,6 @@
 import { dehydrate } from "@tanstack/react-query";
-import { makeQueryClient } from "@/lib/api/quryClient";
-import { fetchNotes } from "@/lib/api/notes";
+import { makeQueryClient } from "@/lib/quryClient";
+import { fetchNotes } from "@/lib/api";
 import HydrateClient from "@/components/HydrateClient/HydrateClient";
 import NotesClient from "./Notes.client";
 
