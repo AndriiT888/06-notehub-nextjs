@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 
 import { fetchNotes } from "@/lib/api";
 import { useDebounce } from "@/components/hooks/useDebounce";
@@ -42,6 +42,7 @@ export default function NotesClient({ initialQuery }: { initialQuery: string }) 
         perPage: PER_PAGE,
         search: debouncedSearch || undefined,
       }),
+    placeholderData: keepPreviousData, //  щоб не мерехтіло при пагінації
   });
 
   const notes = data?.notes ?? [];
@@ -66,7 +67,7 @@ export default function NotesClient({ initialQuery }: { initialQuery: string }) 
       {isLoading && <p>Loading, please wait...</p>}
       {error && <p>Something went wrong.</p>}
 
-      {!isLoading && !error && (
+      {!error && (
         <>
           <NoteList notes={notes} />
 
