@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchNotes } from "@/lib/api";
+import { useDebounce } from "@/components/hooks/useDebounce";
+
 import css from "./NotesPage.module.css";
 
 import SearchBox from "@/components/SearchBox/SearchBox";
@@ -13,26 +15,33 @@ import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
 
 const PER_PAGE = 12;
+const DEBOUNCE_MS = 400;
 
 export default function NotesClient({ initialQuery }: { initialQuery: string }) {
   const [search, setSearch] = useState(initialQuery);
   const [page, setPage] = useState(1);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  // якщо міняємо пошук — логічно скидати на 1 сторінку
+  const debouncedSearch = useDebounce(search, DEBOUNCE_MS);
+
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setPage(1);
   };
 
   const queryKey = useMemo(
-    () => ["notes", { page, perPage: PER_PAGE, search }],
-    [page, search]
+    () => ["notes", { page, perPage: PER_PAGE, search: debouncedSearch }],
+    [page, debouncedSearch]
   );
 
   const { data, isLoading, error } = useQuery({
     queryKey,
-    queryFn: () => fetchNotes({ page, perPage: PER_PAGE, search: search || undefined }),
+    queryFn: () =>
+      fetchNotes({
+        page,
+        perPage: PER_PAGE,
+        search: debouncedSearch || undefined,
+      }),
   });
 
   const notes = data?.notes ?? [];
@@ -45,24 +54,24 @@ export default function NotesClient({ initialQuery }: { initialQuery: string }) 
       <div className={css.controls}>
         <SearchBox value={search} onChange={handleSearchChange} />
 
-        <button className={css.button} type="button" onClick={() => setIsCreateOpen(true)}>
+        <button
+          className={css.button}
+          type="button"
+          onClick={() => setIsCreateOpen(true)}
+        >
           Create note
         </button>
       </div>
 
       {isLoading && <p>Loading, please wait...</p>}
-      {error && (
-  <pre style={{ whiteSpace: "pre-wrap" }}>
-    {JSON.stringify(error, null, 2)}
-  </pre>
-)}
+      {error && <p>Something went wrong.</p>}
 
       {!isLoading && !error && (
         <>
           <NoteList notes={notes} />
 
           {totalPages > 1 && (
-          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           )}
         </>
       )}

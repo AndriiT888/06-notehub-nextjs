@@ -14,9 +14,9 @@ export default function NoteDetailsClient() {
     queryKey: ["note", id],
     queryFn: () => fetchNoteById(String(id)),
     enabled: Boolean(id),
+    refetchOnMount: false, 
   });
 
-  // вимога завдання:
   if (isLoading) return <p>Loading, please wait...</p>;
   if (error || !note) return <p>Something went wrong.</p>;
 
@@ -26,7 +26,6 @@ export default function NoteDetailsClient() {
         <div className={css.header}>
           <h2>{note.title}</h2>
         </div>
-
         <p className={css.tag}>{note.tag}</p>
         <p className={css.content}>{note.content}</p>
         <p className={css.date}>{note.createdAt}</p>
